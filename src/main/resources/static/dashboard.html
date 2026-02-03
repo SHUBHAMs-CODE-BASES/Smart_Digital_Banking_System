@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetBanking</title>
+    <link rel="stylesheet" href="css/hdfc_style.css">
+    <!-- Using a simple font awesome link for icons if needed, or text arrows -->
+</head>
+
+<body>
+
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="brand-logo">
+            <img src="https://companieslogo.com/img/orig/HDB-bb62ee60.png?t=1720244492" alt="Bank Logo"
+                style="height: 40px;"> <!-- Placeholder or Generic Bank Logo -->
+            <div>
+                <span style="color:red; font-weight:bold; font-size:1.2em;">NetBanking</span><br>
+                <span style="color:darkblue; font-weight:bold; font-size:1.5em;">SMART BANK</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div>WELCOME <span id="user-name" style="font-weight:bold;">User</span></div>
+            <div id="last-login">Last Log in: <span id="login-time">Loading...</span></div>
+            <div class="top-links">
+                <a href="#">Change Password</a>
+                <a href="#">Update Contact Details</a>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-nav">
+        <a href="dashboard.html" class="nav-tab active">Accounts</a>
+        <a href="transfer.html" class="nav-tab">Funds Transfer</a>
+        <a href="bills.html" class="nav-tab">BillPay & Recharge</a>
+        <a href="cards.html" class="nav-tab">Cards</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Demat</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Mutual Fund</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Insurance</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Loans</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Offers</a>
+        <a href="profile.html" class="nav-tab"
+            style="margin-left:auto; border-left:1px solid #ccc; border-right:none;">Profile Management</a>
+        <a href="support.html" class="nav-tab" style="border-right:1px solid #ccc;">Support</a>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">Accounts</div>
+            <ul class="sidebar-menu">
+                <li><a href="#" onclick="showSection('summary')">Account Summary</a></li>
+                <li><a href="#" onclick="showCreateAccountModal()">Open New Account</a></li>
+                <li><a href="transfer.html">Fund Transfer</a></li>
+                <li><a href="#" onclick="showTransactionModal('DEPOSIT')">Deposit (Test)</a></li>
+                <li><a href="#" onclick="showTransactionModal('WITHDRAWAL')">Withdraw (Test)</a></li>
+                <li><a href="#" onclick="showSection('enquire')">Enquire <span class="blue-arrow">▶</span></a></li>
+                <li><a href="#" onclick="showSection('request')">Request <span class="blue-arrow">▶</span></a></li>
+                <li><a href="beneficiaries.html">Manage Beneficiaries</a></li>
+            </ul>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+
+            <!-- Account Summary Section -->
+            <div id="section-summary">
+                <div class="page-title">
+                    <span>Account Summary</span>
+                    <span class="printer-icon" onclick="window.print()">Print This Page</span>
+                </div>
+
+                <div class="section-header">Savings Account</div>
+
+                <table class="account-table" id="account-table">
+                    <thead>
+                        <tr>
+                            <th>Account Number</th>
+                            <th>Branch</th>
+                            <th>Currency</th>
+                            <th>Balance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accounts-body">
+                        <tr>
+                            <td colspan="5" class="loading-text">Loading Details...</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div
+                    style="font-size: 1.2em; margin-top: 10px; text-align: right; background-color: #e6e6efff; padding: 10px;">
+                    Total Available Balance: <span id="total-balance" style="font-weight: bold;"> LOADING...</span>
+                </div>
+
+                <div style="margin-top: 30px; font-size: 12px; color: #555;">
+                    <p><b>Note:</b></p>
+                    <ul>
+                        <li>The Available Balance displayed includes the credit balance and overdraft limit (if any) in
+                            your account.</li>
+                        <li>(i) It does not include Uncleared Funds.</li>
+                        <li>(ii) It includes amounts marked for Hold.</li>
+                        <li>The Hold Balance may also include pending service charges due to be recovered from your
+                            account.</li>
+                    </ul>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+
+
+    <!-- Create Account Modal -->
+    <div id="create-account-modal" class="modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;">
+        <div class="modal-content"
+            style="background:white; margin: 10% auto; padding:20px; width:50%; position:relative;">
+            <span onclick="closeModals()" style="position:absolute; right:10px; top:10px; cursor:pointer;">X</span>
+            <h3 style="color:var(--hdfc-blue);">Open New Account</h3>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>Initial Deposit</label>
+                <input type="number" id="initial-deposit" class="form-control" value="0"
+                    style="width:100%; padding:5px;">
+            </div>
+            <button onclick="createAccount()" class="logout-btn">Create Account</button>
+            <button onclick="closeModals()" class="logout-btn" style="background:#ccc; color:black;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Transaction Modal (Hidden) -->
+    <div id="transaction-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;">
+        <div class="modal-content"
+            style="background:white; margin: 10% auto; padding:20px; width:50%; position:relative;">
+            <span onclick="closeModals()" style="position:absolute; right:10px; top:10px; cursor:pointer;">X</span>
+            <h3 id="trans-title" style="color:var(--hdfc-blue);">Transaction</h3>
+
+            <input type="hidden" id="trans-type">
+
+            <div style="margin-bottom:10px;">
+                <label style="display:block; font-weight:bold;">Source Account</label>
+                <select id="source-account-select" style="width:100%; padding:5px;"></select>
+            </div>
+
+            <div id="target-account-group" style="margin-bottom:10px; display:none;">
+                <label style="display:block; font-weight:bold;">Target Account</label>
+                <input type="text" id="target-account" style="width:100%; padding:5px;">
+            </div>
+
+            <div style="margin-bottom:10px;">
+                <label style="display:block; font-weight:bold;">Amount</label>
+                <input type="number" id="trans-amount" style="width:100%; padding:5px;">
+            </div>
+
+            <div style="margin-bottom:10px;">
+                <label style="display:block; font-weight:bold;">Description</label>
+                <input type="text" id="trans-desc" style="width:100%; padding:5px;">
+            </div>
+
+            <button onclick="submitTransaction()" class="logout-btn">Confirm</button>
+            <button onclick="closeModals()" class="logout-btn" style="background:#ccc; color:black;">Cancel</button>
+
+        </div>
+    </div>
+
+
+    <script src="js/main.js"></script>
+    <script>
+        if (!isLoggedIn()) window.location.href = 'index.html';
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        document.getElementById('user-name').innerText = (user.fullName || user.username).toUpperCase();
+        document.getElementById('login-time').innerText = new Date().toLocaleString();
+
+        let myAccounts = [];
+
+        async function loadAccounts() {
+            const response = await apiCall('/accounts/my-accounts');
+            const container = document.getElementById('accounts-body');
+
+            if (!response || !response.ok) {
+                container.innerHTML = '<tr><td colspan="5">Error loading accounts.</td></tr>';
+                return;
+            }
+
+            myAccounts = await response.json();
+            container.innerHTML = '';
+
+            let totalBalance = 0;
+
+            if (myAccounts.length === 0) {
+                container.innerHTML = '<tr><td colspan="5">No accounts found.</td></tr>';
+            }
+
+            const sourceSelect = document.getElementById('source-account-select');
+            sourceSelect.innerHTML = '';
+
+            myAccounts.forEach(acc => {
+                totalBalance += acc.balance;
+
+                // Add to table
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><a href="#" style="color:#004c8f; font-weight:bold;">${acc.accountNumber}</a></td>
+                    <td>MAIN BRANCH</td>
+                    <td>INR</td>
+                    <td style="text-align:right;">${acc.balance.toFixed(2)}</td>
+                    <td>
+                        <button onclick="openTransact('${acc.accountNumber}')" style="font-size:10px;">Transact</button>
+                    </td>
+                `;
+                container.appendChild(tr);
+
+                // Add to dropdown
+                const opt = document.createElement('option');
+                opt.value = acc.accountNumber;
+                opt.text = acc.accountNumber + ' (INR ' + acc.balance + ')';
+                sourceSelect.appendChild(opt);
+            });
+
+            document.getElementById('total-balance').innerText = 'INR ' + totalBalance.toFixed(2);
+        }
+
+        function setActiveTab(element) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections logic if we had more div ids
+            if (sectionId === 'transact') {
+                document.getElementById('section-summary').style.display = 'none';
+                document.getElementById('section-transact').style.display = 'block';
+            } else {
+                document.getElementById('section-summary').style.display = 'block';
+                document.getElementById('section-transact').style.display = 'none';
+            }
+        }
+
+        function openTransact(accNum) {
+            // Just open the modal for now
+            showTransactionModal('TRANSFER');
+            document.getElementById('source-account-select').value = accNum;
+        }
+
+        function showCreateAccountModal() {
+            document.getElementById('create-account-modal').style.display = 'block';
+        }
+
+        async function createAccount() {
+            const initialBalance = document.getElementById('initial-deposit').value;
+            const response = await apiCall('/accounts/create', 'POST', { initialBalance });
+            if (response && response.ok) {
+                alert('Account created!');
+                closeModals();
+                loadAccounts();
+            } else {
+                alert('Failed to create account');
+            }
+        }
+
+        function showTransactionModal(type) {
+            document.getElementById('transaction-modal').style.display = 'block';
+            document.getElementById('trans-type').value = type;
+            document.getElementById('trans-title').innerText = type;
+
+            if (type === 'TRANSFER') {
+                document.getElementById('target-account-group').style.display = 'block';
+            } else {
+                document.getElementById('target-account-group').style.display = 'none';
+            }
+        }
+
+        async function submitTransaction() {
+            const type = document.getElementById('trans-type').value;
+            const amount = document.getElementById('trans-amount').value;
+            const description = document.getElementById('trans-desc').value;
+            const sourceAccount = document.getElementById('source-account-select').value;
+            const targetAccount = document.getElementById('target-account').value;
+
+            const body = {
+                sourceAccountNumber: sourceAccount,
+                amount: amount,
+                type: type,
+                description: description
+            };
+
+            if (type === 'TRANSFER') {
+                body.targetAccountNumber = targetAccount;
+            } else if (type === 'DEPOSIT') {
+                // For Deposit, the API expects targetAccountNumber to be the account receiving money
+                // Our UI selects "Source Account" which is the user's account.
+                body.targetAccountNumber = sourceAccount;
+            }
+
+            // We might need DEPOSIT/WITHDRAWAL logic support too, but UI focused on Transfer as per HDFC usually does
+
+            const response = await apiCall('/transactions/process', 'POST', body);
+            if (response && response.ok) {
+                alert('Transaction Successful');
+                closeModals();
+                loadAccounts();
+            } else {
+                const err = await response.json();
+                alert('Failed: ' + (err.message || 'Unknown error'));
+            }
+        }
+
+        function closeModals() {
+            document.getElementById('transaction-modal').style.display = 'none';
+            document.getElementById('create-account-modal').style.display = 'none';
+        }
+
+        // Init
+        loadAccounts();
+
+    </script>
+</body>
+
+</html>

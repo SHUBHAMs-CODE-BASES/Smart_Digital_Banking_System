@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Smart Banking</title>
+    <link rel="stylesheet" href="css/hdfc_style.css">
+    <!-- Chart.js for Reports -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <nav class="admin-sidebar">
+            <div class="admin-brand">
+                <i class="fa-solid fa-shield-halved"></i> AdminPanel
+            </div>
+            <ul class="admin-menu">
+                <li><a href="#" class="active" onclick="showSection('dashboard', this)"><i
+                            class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#" onclick="showSection('users', this)"><i class="fa-solid fa-users"></i> User
+                        Management</a></li>
+                <li><a href="#" onclick="showSection('accounts', this)"><i class="fa-solid fa-file-invoice-dollar"></i>
+                        Accounts</a></li>
+                <li><a href="#" onclick="showSection('transactions', this)"><i
+                            class="fa-solid fa-money-bill-transfer"></i> Transactions</a></li>
+                <li><a href="#" onclick="showSection('reports', this)"><i class="fa-solid fa-chart-pie"></i> Reports</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="admin-header">
+                <h2>Overview</h2>
+                <div class="user-info">
+                    <span>Welcome, Admin</span>
+                    <button onclick="logout()" class="logout-btn" style="margin-left: 15px;">Logout</button>
+                </div>
+            </div>
+
+            <!-- DASHBOARD SECTION -->
+            <div id="section-dashboard" class="admin-section active">
+                <div class="dashboard-cards">
+                    <div class="stat-card">
+                        <h3 id="stat-users">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="stat-accounts">0</h3>
+                        <p>Total Accounts</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="stat-transactions">0</h3>
+                        <p>Total Transactions</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USERS SECTION -->
+            <div id="section-users" class="admin-section">
+                <div class="page-title">User Management</div>
+                <div style="margin-bottom:15px;">
+                    <input type="text" id="user-search" placeholder="Search users by name/email..."
+                        onkeyup="filterUsers()" class="form-control" style="padding:8px; width:300px;">
+                </div>
+                <table class="account-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-body">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ACCOUNTS SECTION -->
+            <div id="section-accounts" class="admin-section">
+                <div class="page-title">Account Approvals</div>
+                <table class="account-table">
+                    <thead>
+                        <tr>
+                            <th>Account #</th>
+                            <th>User</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accounts-body">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TRANSACTIONS SECTION -->
+            <div id="section-transactions" class="admin-section">
+                <div class="page-title">System Transactions</div>
+                <table class="account-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Source</th>
+                            <th>Target</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactions-body">
+                        <!-- Loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- REPORTS SECTION -->
+            <div id="section-reports" class="admin-section">
+                <div class="page-title">System Reports</div>
+                <div style="height: 400px; width: 100%;">
+                    <canvas id="transactionChart"></canvas>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        if (!isLoggedIn()) window.location.href = 'index.html';
+
+        // Initialize
+        loadDashboardStats();
+        loadUsers();
+        loadAllAccounts();
+
+        let allUsers = [];
+
+        function showSection(sectionId, linkElement) {
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(el => el.classList.remove('active'));
+            // Show target
+            document.getElementById('section-' + sectionId).classList.add('active');
+
+            // Update sidebar active state
+            document.querySelectorAll('.admin-menu a').forEach(el => el.classList.remove('active'));
+            if (linkElement) linkElement.classList.add('active');
+
+            if (sectionId === 'transactions') loadTransactions();
+            if (sectionId === 'reports') loadReports();
+        }
+
+        async function loadDashboardStats() {
+            try {
+                const response = await apiCall('/admin/dashboard-stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('stat-users').innerText = stats.totalUsers;
+                    document.getElementById('stat-accounts').innerText = stats.totalAccounts;
+                    document.getElementById('stat-transactions').innerText = stats.totalTransactions;
+                }
+            } catch (e) { console.error("Stats error", e); }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await apiCall('/admin/users');
+                if (!response.ok) return;
+
+                allUsers = await response.json();
+                renderUsers(allUsers);
+            } catch (e) { console.error("Users error", e); }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('users-body');
+            tbody.innerHTML = '';
+            users.forEach(u => {
+                const tr = document.createElement('tr');
+                // Mock block functionality - In real app, User entity needs status field. 
+                // Assuming we default to showing 'Active' and no actual block logic in backend yet except role management.
+                // For demo, we just show buttons.
+
+                tr.innerHTML = `
+                    <td>${u.id}</td>
+                    <td>${u.username}</td>
+                    <td>${u.fullName || '-'}</td>
+                    <td>${u.email}</td>
+                    <td>
+                        <button class="action-btn btn-block" onclick="alert('Block feature coming soon (requires UserStatus in DB)')">Block</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterUsers() {
+            const term = document.getElementById('user-search').value.toLowerCase();
+            const filtered = allUsers.filter(u =>
+                u.username.toLowerCase().includes(term) ||
+                (u.email && u.email.toLowerCase().includes(term))
+            );
+            renderUsers(filtered);
+        }
+
+        async function loadAllAccounts() {
+            const response = await apiCall('/admin/accounts');
+            if (!response) return;
+
+            const accounts = await response.json();
+            const tbody = document.getElementById('accounts-body');
+            tbody.innerHTML = '';
+
+            accounts.forEach(acc => {
+                const row = document.createElement('tr');
+                const actionBtn = acc.status === 'ACTIVE'
+                    ? `<button class="action-btn btn-block" onclick="changeStatus('${acc.accountNumber}', 'BLOCKED')">Block</button>`
+                    : `<button class="action-btn btn-unblock" onclick="changeStatus('${acc.accountNumber}', 'ACTIVE')">Approve/Active</button>`;
+
+                row.innerHTML = `
+                    <td>${acc.accountNumber}</td>
+                    <td>${acc.user ? acc.user.username : 'N/A'}</td>
+                    <td>$${acc.balance.toFixed(2)}</td>
+                    <td><span class="status-badge status-${acc.status.toLowerCase()}">${acc.status}</span></td>
+                    <td>${actionBtn}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function changeStatus(accNum, newStatus) {
+            if (!confirm('Change status to ' + newStatus + '?')) return;
+            const response = await apiCall(`/admin/account/${accNum}/status`, 'PUT', { status: newStatus });
+            if (response && response.ok) {
+                loadAllAccounts();
+                loadDashboardStats(); // Refresh stats
+            } else {
+                alert('Action failed');
+            }
+        }
+
+        async function loadTransactions() {
+            const response = await apiCall('/admin/transactions');
+            if (!response.ok) return;
+
+            const txns = await response.json();
+            const tbody = document.getElementById('transactions-body');
+            tbody.innerHTML = '';
+
+            txns.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${t.id}</td>
+                    <td>${t.sourceAccount.accountNumber}</td>
+                    <td>${t.targetAccount ? t.targetAccount.accountNumber : '-'}</td>
+                    <td>${t.type}</td>
+                    <td>$${t.amount.toFixed(2)}</td>
+                    <td>${new Date(t.timestamp).toLocaleString()}</td>
+                 `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        let chartInstance = null;
+        async function loadReports() {
+            // Mock data or fetch real data aggregation
+            // Creating a simple chart with Stats from header
+            const ctx = document.getElementById('transactionChart').getContext('2d');
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Users', 'Accounts', 'Transactions'],
+                    datasets: [{
+                        label: 'System Count',
+                        data: [
+                            parseInt(document.getElementById('stat-users').innerText),
+                            parseInt(document.getElementById('stat-accounts').innerText),
+                            parseInt(document.getElementById('stat-transactions').innerText)
+                        ],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+    </script>
+</body>
+
+</html>

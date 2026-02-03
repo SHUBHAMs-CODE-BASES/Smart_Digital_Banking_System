@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Beneficiaries - NetBanking</title>
+    <link rel="stylesheet" href="css/hdfc_style.css">
+</head>
+
+<body>
+
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="brand-logo">
+            <img src="https://companieslogo.com/img/orig/HDB-bb62ee60.png?t=1720244492" alt="Bank Logo"
+                style="height: 40px;">
+            <div>
+                <span style="color:red; font-weight:bold; font-size:1.2em;">NetBanking</span><br>
+                <span style="color:darkblue; font-weight:bold; font-size:1.5em;">SMART BANK</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div>WELCOME <span id="user-name" style="font-weight:bold;">User</span></div>
+            <div id="last-login">Last Log in: <span id="login-time">Loading...</span></div>
+            <div class="top-links">
+                <a href="dashboard.html">Back to Dashboard</a>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-nav">
+        <a href="dashboard.html" class="nav-tab">Accounts</a>
+        <a href="dashboard.html" class="nav-tab">Funds Transfer</a>
+        <a href="bills.html" class="nav-tab">BillPay & Recharge</a>
+        <a href="cards.html" class="nav-tab">Cards</a>
+        <a href="#" class="nav-tab active">Beneficiaries</a>
+        <a href="support.html" class="nav-tab" style="float:right; border-right:1px solid #ccc;">Support</a>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">Beneficiaries</div>
+            <ul class="sidebar-menu">
+                <li><a href="#" onclick="showSection('list')">View All</a></li>
+                <li><a href="#" onclick="showSection('add')">Add New Beneficiary</a></li>
+            </ul>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+
+            <!-- List Section -->
+            <div id="section-list">
+                <div class="page-title">
+                    <span>Manage Beneficiaries</span>
+                </div>
+
+                <table class="account-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Account Number</th>
+                            <th>Bank Name</th>
+                            <th>IFSC Code</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="beneficiaries-body">
+                        <tr>
+                            <td colspan="5" class="loading-text">Loading Beneficiaries...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Add Section (Hidden) -->
+            <div id="section-add" style="display:none;">
+                <div class="page-title">Add New Beneficiary</div>
+                <div style="background: white; padding: 20px; border: 1px solid #ddd; max-width: 500px;">
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>Beneficiary Name</label>
+                        <input type="text" id="ben-name" class="form-control" style="width:100%; padding:8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>Account Number</label>
+                        <input type="text" id="ben-acc" class="form-control" style="width:100%; padding:8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>Bank Name</label>
+                        <input type="text" id="ben-bank" class="form-control" style="width:100%; padding:8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label>IFSC Code</label>
+                        <input type="text" id="ben-ifsc" class="form-control" style="width:100%; padding:8px;">
+                    </div>
+                    <button onclick="addBeneficiary()" class="logout-btn" style="background:#28a745;">Save
+                        Beneficiary</button>
+                    <button onclick="showSection('list')" class="logout-btn"
+                        style="background:#ccc; color:black;">Cancel</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        if (!isLoggedIn()) window.location.href = 'index.html';
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        document.getElementById('user-name').innerText = (user.fullName || user.username).toUpperCase();
+        document.getElementById('login-time').innerText = new Date().toLocaleString();
+
+        function showSection(sectionId) {
+            if (sectionId === 'add') {
+                document.getElementById('section-list').style.display = 'none';
+                document.getElementById('section-add').style.display = 'block';
+            } else {
+                document.getElementById('section-list').style.display = 'block';
+                document.getElementById('section-add').style.display = 'none';
+                loadBeneficiaries();
+            }
+        }
+
+        async function loadBeneficiaries() {
+            const container = document.getElementById('beneficiaries-body');
+            const response = await apiCall('/beneficiaries');
+
+            if (!response || !response.ok) {
+                container.innerHTML = '<tr><td colspan="5">Error loading data.</td></tr>';
+                return;
+            }
+
+            const data = await response.json();
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = '<tr><td colspan="5">No beneficiaries found.</td></tr>';
+                return;
+            }
+
+            data.forEach(ben => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${ben.name}</td>
+                    <td>${ben.accountNumber}</td>
+                    <td>${ben.bankName}</td>
+                    <td>${ben.ifscCode}</td>
+                    <td>
+                        <button onclick="deleteBeneficiary(${ben.id})" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer;">Delete</button>
+                    </td>
+                `;
+                container.appendChild(tr);
+            });
+        }
+
+        async function addBeneficiary() {
+            const body = {
+                name: document.getElementById('ben-name').value,
+                accountNumber: document.getElementById('ben-acc').value,
+                bankName: document.getElementById('ben-bank').value,
+                ifscCode: document.getElementById('ben-ifsc').value
+            };
+
+            if (!body.name || !body.accountNumber) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            const response = await apiCall('/beneficiaries', 'POST', body);
+            if (response && response.ok) {
+                alert('Beneficiary Added Successfully!');
+                // Clear form
+                document.getElementById('ben-name').value = '';
+                document.getElementById('ben-acc').value = '';
+                document.getElementById('ben-bank').value = '';
+                document.getElementById('ben-ifsc').value = '';
+                showSection('list');
+            } else {
+                alert('Failed to add beneficiary');
+            }
+        }
+
+        async function deleteBeneficiary(id) {
+            if (!confirm('Are you sure you want to delete this beneficiary?')) return;
+
+            const response = await apiCall('/beneficiaries/' + id, 'DELETE');
+            if (response && response.ok) {
+                loadBeneficiaries();
+            } else {
+                alert('Failed to delete');
+            }
+        }
+
+        // Init
+        loadBeneficiaries();
+    </script>
+</body>
+
+</html>

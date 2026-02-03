@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Smart Digital Banking</title>
+    <link rel="stylesheet" href="css/hdfc_style.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+            border: 1px solid transparent;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="nav-brand">
+            <i class="fa-solid fa-building-columns" style="font-size: 28px; color: #fff;"></i>
+            <span>SMART BANK</span>
+        </div>
+        <div class="nav-menu">
+            <a href="#" class="nav-link">Personal Banking</a>
+            <a href="#" class="nav-link">Corporate</a>
+            <a href="#" class="nav-link">SME</a>
+            <a href="about.html" class="nav-link">About Us</a>
+            <!-- Link back to Login -->
+            <a href="index.html" class="btn-login-nav">LOGIN</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+
+        <!-- Text Content -->
+        <div class="hero-content">
+            <h1 class="hero-title">Join the Banking<br>Revolution</h1>
+            <p class="hero-subtitle">Create an account in minutes and experience premium digital banking services.</p>
+
+            <div class="hero-buttons">
+                <a href="#" class="btn-hero">
+                    <i class="fa-solid fa-mobile-screen"></i> Mobile App
+                </a>
+                <a href="#" class="btn-hero">
+                    <i class="fa-solid fa-globe"></i> NetBanking
+                </a>
+            </div>
+        </div>
+
+        <!-- Register Card -->
+        <div class="login-card-container">
+            <div class="login-header">
+                <h3>Register Now</h3>
+            </div>
+
+            <div id="register-alert" class="alert alert-danger" style="display: none;"></div>
+            <div id="register-success" class="alert-success" style="display: none;"></div>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="fullname" class="form-input" placeholder="Enter Full Name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="username" class="form-input" placeholder="Choose Username" required
+                        minlength="3">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="email" class="form-input" placeholder="Enter Email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="Create Password" required
+                        minlength="6">
+                </div>
+                <button type="submit" class="btn-login-submit">REGISTER</button>
+            </form>
+
+            <div class="login-footer">
+                <p>Already have an account? <a href="index.html">Login Now</a></p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+    <script>
+        // Registration Logic
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('fullname').value;
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const alertBox = document.getElementById('register-alert');
+            const successBox = document.getElementById('register-success');
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+
+            btn.innerText = 'Registering...';
+            btn.disabled = true;
+            alertBox.style.display = 'none';
+            successBox.style.display = 'none';
+
+            try {
+                const response = await fetch(API_URL + '/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName, username, email, password, role: ["user"] })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successBox.innerText = 'Registration successful! Redirecting to login...';
+                    successBox.style.display = 'block';
+
+                    setTimeout(() => window.location.href = 'index.html', 2000);
+                } else {
+                    alertBox.innerText = data.message || 'Registration failed';
+                    alertBox.style.display = 'block';
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                alertBox.innerText = 'Server error. Please check connection.';
+                alertBox.style.display = 'block';
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Smart Digital Banking</title>
+    <link rel="stylesheet" href="css/hdfc_style.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Specific styles for About Us page */
+        .about-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .about-section {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .about-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            color: var(--hdfc-blue);
+            font-size: 28px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--hdfc-red);
+            padding-left: 15px;
+        }
+
+        .content-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            text-align: justify;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .team-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #eee;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .member-icon {
+            font-size: 40px;
+            color: var(--hdfc-blue);
+            margin-bottom: 15px;
+        }
+
+        .member-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .member-role {
+            font-size: 14px;
+            color: var(--hdfc-red);
+            font-weight: 500;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--hdfc-blue);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation (Consistent with Landing Page) -->
+    <nav class="landing-nav">
+        <div class="nav-brand">
+            <i class="fa-solid fa-building-columns" style="font-size: 28px; color: #fff;"></i>
+            <span>SMART BANK</span>
+        </div>
+        <div class="nav-menu">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="#" class="nav-link" style="opacity: 1; text-decoration: underline;">About Us</a>
+            <a href="index.html#login-form" class="btn-login-nav">LOGIN</a>
+        </div>
+    </nav>
+
+    <div class="about-container">
+
+        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
+
+        <!-- About The Bank -->
+        <div class="about-section">
+            <h2 class="section-title">About Smart Digital Bank</h2>
+            <p class="content-text">
+                Welcome to Smart Digital Bank, the future of seamless and secure banking.
+                Established with a vision to revolutionize the financial industry, we combine cutting-edge technology
+                with
+                customer-centric services to provide you with a banking experience like never before.
+                From instant fund transfers to comprehensive loan management, our platform is designed to meet all your
+                financial needs with speed, security, and reliability.
+            </p>
+        </div>
+
+        <!-- Development Team -->
+        <div class="about-section">
+            <h2 class="section-title">Development Team</h2>
+            <p class="content-text">
+                This project was passionately designed and developed by a dedicated group of engineers.
+                Our goal was to build a robust, scalable, and secure banking system that demonstrates modern web
+                development practices.
+            </p>
+
+            <div class="team-grid">
+                <!-- Group Members -->
+                <div class="team-card">
+                    <div class="member-icon"><i class="fa-solid fa-user-gear"></i></div>
+                    <div class="member-name">Project Lead</div>
+                    <div class="member-role">Full Stack Architect</div>
+                </div>
+
+                <div class="team-card">
+                    <div class="member-icon"><i class="fa-solid fa-code"></i></div>
+                    <div class="member-name">Member 1</div>
+                    <div class="member-role">Backend Developer</div>
+                </div>
+
+                <div class="team-card">
+                    <div class="member-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                    <div class="member-name">Member 2</div>
+                    <div class="member-role">Frontend Developer</div>
+                </div>
+
+                <div class="team-card">
+                    <div class="member-icon"><i class="fa-solid fa-database"></i></div>
+                    <div class="member-name">Member 3</div>
+                    <div class="member-role">Database Engineer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Smart Banking</title>
+    <link rel="stylesheet" href="css/hdfc_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .profile-header-card {
+            background: linear-gradient(135deg, var(--hdfc-blue), #003366);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .profile-img-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+            background: #fff;
+        }
+
+        .camera-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: var(--hdfc-red);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+        }
+
+        .profile-info h2 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .profile-info p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+        }
+
+        .details-card {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-header-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="brand-logo">
+            <i class="fa-solid fa-building-columns" style="font-size: 28px; color: #004c8f;"></i>
+            <div style="margin-left:10px;">
+                <span style="color:red; font-weight:bold; font-size:1.2em;">NetBanking</span><br>
+                <span style="color:#004c8f; font-weight:bold; font-size:1.5em;">SMART BANK</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div>WELCOME <span id="header-user-name" style="font-weight:bold;">User</span></div>
+            <div class="top-links">
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-nav">
+        <a href="dashboard.html" class="nav-tab">Accounts</a>
+        <a href="transfer.html" class="nav-tab">Funds Transfer</a>
+        <a href="bills.html" class="nav-tab">BillPay & Recharge</a>
+        <a href="cards.html" class="nav-tab">Cards</a>
+        <a href="profile.html" class="nav-tab active"
+            style="margin-left:auto; border-left:1px solid #ccc; border-right:none;">Profile Management</a>
+        <a href="support.html" class="nav-tab" style="border-right:1px solid #ccc;">Support</a>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">My Profile</div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active">View Profile <span class="blue-arrow">▶</span></a></li>
+                <li><a href="settings.html">Change Password</a></li>
+                <li><a href="#">Security Settings</a></li>
+                <li><a href="#">Activity Log</a></li>
+            </ul>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+
+            <div class="profile-header-card">
+                <div class="profile-img-container">
+                    <img src="images/profile-placeholder.png" id="main-profile-img" class="profile-img"
+                        onerror="this.src='https://via.placeholder.com/150'">
+                    <div class="camera-icon" onclick="document.getElementById('file-input').click()">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                    <input type="file" id="file-input" style="display:none;" accept="image/*"
+                        onchange="uploadPhoto(this)">
+                </div>
+                <div class="profile-info">
+                    <h2 id="display-name">Loading Name...</h2>
+                    <p id="display-role">Customer ID: <span id="customer-id">...</span></p>
+                    <p id="display-email">email@example.com</p>
+                </div>
+            </div>
+
+            <div class="details-card">
+                <h3 style="color:var(--hdfc-blue); border-bottom:1px solid #eee; padding-bottom:10px; margin-top:0;">
+                    Personal Details</h3>
+
+                <div id="alert-box" class="alert-danger" style="display:none;"></div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="details-name" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" id="details-email" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" id="details-phone" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Username (Cannot Change)</label>
+                        <input type="text" id="details-username" class="form-input" disabled
+                            style="background:#f0f0f0;">
+                    </div>
+                </div>
+
+                <div style="margin-top:20px; text-align:right;">
+                    <button onclick="saveProfile()" class="btn-login-submit" style="width:200px;">Save Changes</button>
+                    <p style="font-size:12px; color:#777; margin-top:10px;">Changes are saved instantly.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        if (!isLoggedIn()) window.location.href = 'index.html';
+
+        async function loadProfileData() {
+            try {
+                const user = await (await apiCall('/user/profile')).json();
+
+                // Header
+                document.getElementById('display-name').innerText = (user.fullName || user.username).toUpperCase();
+                document.getElementById('header-user-name').innerText = (user.fullName || user.username).toUpperCase();
+                document.getElementById('customer-id').innerText = user.id; // Using ID as Custom ID for demo
+                document.getElementById('display-email').innerText = user.email || 'No Email Linked';
+                if (user.profileImage) {
+                    document.getElementById('main-profile-img').src = user.profileImage;
+                }
+
+                // Form
+                document.getElementById('details-name').value = user.fullName || '';
+                document.getElementById('details-email').value = user.email || '';
+                document.getElementById('details-phone').value = user.phoneNumber || '';
+                document.getElementById('details-username').value = user.username;
+
+                // Update Local Storage
+                localStorage.setItem('user', JSON.stringify(user));
+
+            } catch (error) {
+                console.error("Failed to load profile", error);
+            }
+        }
+
+        async function saveProfile() {
+            const body = {
+                fullName: document.getElementById('details-name').value,
+                email: document.getElementById('details-email').value,
+                phoneNumber: document.getElementById('details-phone').value
+            };
+
+            const btn = document.querySelector('.btn-login-submit');
+            const originalText = btn.innerText;
+            btn.innerText = 'Saving...';
+            btn.disabled = true;
+
+            const res = await apiCall('/user/profile', 'PUT', body);
+            if (res.ok) {
+                alert('Profile Updated Successfully!');
+                loadProfileData(); // Refresh UI
+            } else {
+                alert('Failed to update profile.');
+            }
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+
+        async function uploadPhoto(input) {
+            if (input.files && input.files[0]) {
+                const formData = new FormData();
+                formData.append('file', input.files[0]);
+
+                // Optimistic UI update
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('main-profile-img').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(API_URL + '/user/upload-photo', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                            // Do NOT set Content-Type, letting browser set boundary
+                        },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log("Uploaded:", data.imageUrl);
+                        // Reload data to ensure sync
+                        // loadProfileData(); 
+                    } else {
+                        alert('Image upload failed');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Error uploading image');
+                }
+            }
+        }
+
+        loadProfileData();
+    </script>
+</body>
+
+</html>

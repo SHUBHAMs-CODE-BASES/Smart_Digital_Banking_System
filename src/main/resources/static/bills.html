@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Payments - NetBanking</title>
+    <link rel="stylesheet" href="css/hdfc_style.css">
+</head>
+
+<body>
+
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="brand-logo">
+            <img src="https://companieslogo.com/img/orig/HDB-bb62ee60.png?t=1720244492" alt="Bank Logo"
+                style="height: 40px;">
+            <div>
+                <span style="color:red; font-weight:bold; font-size:1.2em;">NetBanking</span><br>
+                <span style="color:darkblue; font-weight:bold; font-size:1.5em;">SMART BANK</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div>WELCOME <span id="user-name" style="font-weight:bold;">User</span></div>
+            <div id="last-login">Last Log in: <span id="login-time">Loading...</span></div>
+            <div class="top-links">
+                <a href="#">Change Password</a>
+                <a href="#">Update Contact Details</a>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-nav">
+        <a href="dashboard.html" class="nav-tab">Accounts</a>
+        <a href="dashboard.html" class="nav-tab">Funds Transfer</a>
+        <a href="bills.html" class="nav-tab active">BillPay & Recharge</a>
+        <a href="cards.html" class="nav-tab">Cards</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Demat</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Mutual Fund</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Insurance</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Loans</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Offers</a>
+        <a href="support.html" class="nav-tab" style="float:right; border-right:1px solid #ccc;">Support</a>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">BillPay & Recharge</div>
+            <ul class="sidebar-menu">
+                <li><a href="#" onclick="showSection('new-bill')">Pay New Bill</a></li>
+                <li><a href="#" onclick="showSection('history')">Payment History</a></li>
+                <li><a href="#" onclick="alert('Not implemented')">Mobile Recharge</a></li>
+                <li><a href="#" onclick="alert('Not implemented')">DTH Recharge</a></li>
+            </ul>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <div id="section-new-bill">
+                <div class="page-title">Pay New Bill</div>
+
+                <div style="background:#f9f9f9; padding:20px; border:1px solid #ddd;">
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block; font-weight:bold;">Select Biller</label>
+                        <select id="biller-select" style="width:100%; padding:8px;"></select>
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block; font-weight:bold;">Pay From Account</label>
+                        <select id="account-select" style="width:100%; padding:8px;"></select>
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block; font-weight:bold;">Consumer Number / Ref</label>
+                        <input type="text" id="bill-ref" style="width:100%; padding:8px;" placeholder="e.g. 123456789">
+                    </div>
+                    <div style="margin-bottom:15px;">
+                        <label style="display:block; font-weight:bold;">Amount</label>
+                        <input type="number" id="bill-amount" style="width:100%; padding:8px;" placeholder="0.00">
+                    </div>
+                    <button onclick="payBill()" class="logout-btn"
+                        style="background:#28a745; font-size:14px; padding:8px 20px;">Pay Bill</button>
+                </div>
+            </div>
+
+            <div id="section-history" style="display:none;">
+                <div class="page-title">Payment History</div>
+                <table class="account-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Biller</th>
+                            <th>Ref #</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bill-history-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        if (!isLoggedIn()) window.location.href = 'index.html';
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (document.getElementById('user-name')) document.getElementById('user-name').innerText = (user.fullName || user.username).toUpperCase();
+        if (document.getElementById('login-time')) document.getElementById('login-time').innerText = new Date().toLocaleString();
+
+
+        async function loadData() {
+            // Load Billers
+            const billers = await (await apiCall('/bills/billers')).json();
+            const billerSelect = document.getElementById('biller-select');
+            billers.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b.id;
+                opt.text = `${b.name} (${b.category})`;
+                billerSelect.appendChild(opt);
+            });
+
+            // Load Accounts
+            const accounts = await (await apiCall('/accounts/my-accounts')).json();
+            const accountSelect = document.getElementById('account-select');
+            accounts.forEach(acc => {
+                const opt = document.createElement('option');
+                opt.value = acc.id;
+                opt.text = `${acc.accountNumber} - INR ${acc.balance}`;
+                accountSelect.appendChild(opt);
+            });
+
+            loadHistory();
+        }
+
+        async function loadHistory() {
+            const history = await (await apiCall('/bills/history')).json();
+            const tbody = document.getElementById('bill-history-body');
+            tbody.innerHTML = '';
+            history.forEach(h => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(h.paymentDate).toLocaleDateString()}</td>
+                    <td>${h.biller.name}</td>
+                    <td>${h.referenceNumber}</td>
+                    <td>INR ${h.amount.toFixed(2)}</td>
+                    <td><span style="color:green; font-weight:bold;">${h.status}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function payBill() {
+            const billerId = document.getElementById('biller-select').value;
+            const accountId = document.getElementById('account-select').value;
+            const ref = document.getElementById('bill-ref').value;
+            const amount = document.getElementById('bill-amount').value;
+
+            if (!billerId || !accountId || !ref || !amount) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const res = await apiCall('/bills/pay', 'POST', {
+                billerId: billerId,
+                accountId: accountId,
+                referenceNumber: ref,
+                amount: amount
+            });
+
+            if (res && res.ok) {
+                alert('Bill Paid Successfully! Transaction ID: ' + (await res.json()).id);
+                loadHistory();
+                showSection('history');
+            } else {
+                alert('Payment Failed');
+            }
+        }
+
+        function showSection(sec) {
+            if (sec === 'new-bill') {
+                document.getElementById('section-new-bill').style.display = 'block';
+                document.getElementById('section-history').style.display = 'none';
+            } else {
+                document.getElementById('section-new-bill').style.display = 'none';
+                document.getElementById('section-history').style.display = 'block';
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+
+</html>

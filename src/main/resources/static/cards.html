@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cards - NetBanking</title>
+    <link rel="stylesheet" href="css/hdfc_style.css">
+</head>
+
+<body>
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="brand-logo">
+            <img src="https://companieslogo.com/img/orig/HDB-bb62ee60.png?t=1720244492" alt="Bank Logo"
+                style="height: 40px;">
+            <div>
+                <span style="color:red; font-weight:bold; font-size:1.2em;">NetBanking</span><br>
+                <span style="color:darkblue; font-weight:bold; font-size:1.5em;">SMART BANK</span>
+            </div>
+        </div>
+        <div class="user-info">
+            <div>WELCOME <span id="user-name" style="font-weight:bold;">User</span></div>
+            <div id="last-login">Last Log in: <span id="login-time">Loading...</span></div>
+            <div class="top-links">
+                <a href="#">Change Password</a>
+                <a href="#">Update Contact Details</a>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-nav">
+        <a href="dashboard.html" class="nav-tab">Accounts</a>
+        <a href="dashboard.html" class="nav-tab">Funds Transfer</a>
+        <a href="bills.html" class="nav-tab">BillPay & Recharge</a>
+        <a href="cards.html" class="nav-tab active">Cards</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Demat</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Mutual Fund</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Insurance</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Loans</a>
+        <a href="#" class="nav-tab" onclick="alert('Module not implemented yet')">Offers</a>
+        <a href="support.html" class="nav-tab" style="float:right; border-right:1px solid #ccc;">Support</a>
+    </nav>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">Cards</div>
+            <ul class="sidebar-menu">
+                <li><a href="#" onclick="showSection('my-cards')">My Cards</a></li>
+                <li><a href="#" onclick="showIssueModal()">Request New Card</a></li>
+                <li><a href="#" onclick="alert('Not implemented')">Block/Unblock</a></li>
+                <li><a href="#" onclick="alert('Not implemented')">Upgrade Card</a></li>
+            </ul>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <div id="section-my-cards">
+                <div class="page-title">
+                    <span>My Cards</span>
+                    <button onclick="showIssueModal()" class="logout-btn" style="float:right;">+ Request New
+                        Card</button>
+                </div>
+                <div id="cards-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <!-- Cards loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Card Modal -->
+    <div id="issue-card-modal" class="modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;">
+        <div class="modal-content"
+            style="background:white; margin: 10% auto; padding:20px; width:50%; position:relative; border: 3px solid var(--hdfc-blue);">
+            <span onclick="document.getElementById('issue-card-modal').style.display='none'"
+                style="position:absolute; right:10px; top:10px; cursor:pointer;">X</span>
+            <h3 style="color:var(--hdfc-blue);">Request New Card</h3>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>Select Account</label>
+                <select id="card-account-select" class="logout-btn"
+                    style="width:100%; color:black; background:white; border:1px solid #ccc;"></select>
+            </div>
+            <button onclick="issueCard()" class="logout-btn">Issue Card</button>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        if (!isLoggedIn()) window.location.href = 'index.html';
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (document.getElementById('user-name')) document.getElementById('user-name').innerText = (user.fullName || user.username).toUpperCase();
+        if (document.getElementById('login-time')) document.getElementById('login-time').innerText = new Date().toLocaleString();
+
+        async function loadCards() {
+            const cards = await (await apiCall('/cards/my-cards')).json();
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+
+            if (cards.length === 0) {
+                container.innerHTML = '<p>No cards found.</p>';
+            }
+
+            cards.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'card-item'; // Use a simple class or inline
+                div.style.background = 'linear-gradient(45deg, #004c8f, #007bff)';
+                div.style.color = 'white';
+                div.style.borderRadius = '10px';
+                div.style.padding = '20px';
+                div.style.width = '300px';
+                div.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+
+                const isBlocked = c.status === 'BLOCKED';
+
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                        <span style="font-weight:bold;">${c.type}</span>
+                        <span style="background:white; color:${isBlocked ? 'red' : 'green'}; padding:2px 5px; border-radius:3px; font-size:10px;">${c.status}</span>
+                    </div>
+                    <h3 style="margin: 0 0 20px 0; letter-spacing: 3px; font-family: monospace;">${formatCardNumber(c.cardNumber)}</h3>
+                    <div style="display:flex; justify-content:space-between; font-size:12px;">
+                        <span>${c.cardHolderName}</span>
+                        <span>EXP: ${c.expiryDate}</span>
+                    </div>
+                    <div style="margin-top: 15px; text-align: right;">
+                        <button onclick="toggleCard(${c.id}, ${!isBlocked})" 
+                            class="logout-btn" 
+                            style="background: ${isBlocked ? '#28a745' : '#dc3545'}; font-size: 10px;">
+                            ${isBlocked ? 'Unblock' : 'Block'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            // Load accounts for modal
+            const accounts = await (await apiCall('/accounts/my-accounts')).json();
+            const select = document.getElementById('card-account-select');
+            select.innerHTML = '';
+            accounts.forEach(acc => {
+                const opt = document.createElement('option');
+                opt.value = acc.id;
+                opt.text = acc.accountNumber;
+                select.appendChild(opt);
+            });
+        }
+
+        function formatCardNumber(num) {
+            return num ? num.match(/.{1,4}/g).join(' ') : '**** **** **** ****';
+        }
+
+        async function toggleCard(cardId, shouldBlock) {
+            if (!confirm(`Are you sure you want to ${shouldBlock ? 'BLOCK' : 'UNBLOCK'} this card?`)) return;
+
+            await apiCall(`/cards/${cardId}/status?block=${shouldBlock}`, 'POST');
+            loadCards(); // Refresh
+        }
+
+        async function issueCard() {
+            const accId = document.getElementById('card-account-select').value;
+            await apiCall(`/cards/issue/${accId}`, 'POST');
+            document.getElementById('issue-card-modal').style.display = 'none';
+            loadCards();
+        }
+
+        function showIssueModal() {
+            document.getElementById('issue-card-modal').style.display = 'block';
+        }
+
+        function showSection(sec) {
+            // For future sidebar links
+        }
+
+        loadCards();
+    </script>
+</body>
+
+</html>

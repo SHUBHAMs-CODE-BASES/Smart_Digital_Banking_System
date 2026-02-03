@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - Smart Banking</title>
+    <link rel="stylesheet" href="css/hdfc_style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">Smart Banking</div>
+        <div>
+            <a href="dashboard.html" class="btn" style="background: transparent;">Dashboard</a>
+            <button onclick="logout()" class="btn" style="background: #dc3545;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="section-title">Customer Support</h2>
+
+        <div class="grid-2">
+            <div>
+                <div class="card">
+                    <h3>Open New Ticket</h3>
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <input type="text" id="ticket-subject" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea id="ticket-message" class="form-control" rows="5"></textarea>
+                    </div>
+                    <button onclick="createTicket()" class="btn" id="create-ticket-btn">Submit Ticket</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <h3>My Tickets</h3>
+                    <div id="tickets-list">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- Chatbot Stub -->
+                <div class="card" style="margin-top: 20px; background: #f8f9fa;">
+                    <h3>AI Chat Assistant</h3>
+                    <div
+                        style="height: 150px; border: 1px solid #ddd; padding: 10px; overflow-y: scroll; background: white;">
+                        <p style="color: blue;"><strong>Bot:</strong> How can I help you today?</p>
+                    </div>
+                    <div style="display: flex; margin-top: 10px;">
+                        <input type="text" class="form-control" placeholder="Type here..." id="chat-input">
+                        <button class="btn" style="width: auto; margin-left: 5px;">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Options -->
+        <div class="card" style="margin-top: 20px;">
+            <h3>Contact Using</h3>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <a href="tel:+18001234567" class="btn"
+                    style="background: #28a745; text-decoration: none; color: white;">
+                    <i class="fa-solid fa-phone"></i> Call
+                </a>
+                <a href="mailto:support@smartbank.com" class="btn"
+                    style="background: #17a2b8; text-decoration: none; color: white;">
+                    <i class="fa-solid fa-envelope"></i> Mail
+                </a>
+                <a href="https://www.google.com/maps/place/TIT+College+Bhopal/@23.2595057,77.4796148,15z/data=!3m1!4b1!4m6!3m5!1s0x397c4114b2e21e37:0xd1840e0ca4b8fdd1!8m2!3d23.2595068!4d77.4980689!16s%2Fg%2F11cs16p45c?entry=ttu&g_ep=EgoyMDI2MDEyMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="btn"
+                    style="background: #ffc107; text-decoration: none; color: black;">
+                    <i class="fa-solid fa-location-dot"></i> Locate
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        if (!isLoggedIn()) window.location.href = 'index.html';
+
+        async function loadTickets() {
+            const tickets = await (await apiCall('/support/my-tickets')).json();
+            const container = document.getElementById('tickets-list');
+            container.innerHTML = '';
+
+            if (tickets.length === 0) container.innerHTML = '<p>No tickets found.</p>';
+
+            tickets.forEach(t => {
+                const div = document.createElement('div');
+                div.style.borderBottom = '1px solid #eee';
+                div.style.padding = '10px 0';
+                div.innerHTML = `
+                    <h4>${t.subject} <span class="badge bg-secondary" style="font-size: 0.7rem;">${t.status}</span></h4>
+                    <p>${t.message}</p>
+                    <small class="text-muted">${new Date(t.createdAt).toLocaleString()}</small>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function createTicket() {
+            const subject = document.getElementById('ticket-subject').value;
+            const message = document.getElementById('ticket-message').value;
+
+            if (!subject || !message) {
+                alert('Fill all fields');
+                return;
+            }
+
+            await apiCall('/support/create', 'POST', { subject, message });
+            alert('Ticket Created');
+            document.getElementById('ticket-subject').value = '';
+            document.getElementById('ticket-message').value = '';
+            loadTickets();
+        }
+
+        loadTickets();
+    </script>
+</body>
+
+</html>
